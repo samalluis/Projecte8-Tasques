@@ -10,3 +10,4 @@ Venciment: dimarts, 12 de maig 2026, 23:59
 Agregar un Zorin al directori actiu de foodlogistic, comproveu que entrant com a un usuari pot accedir a les seves carpetes (personal i de grup).
 
 
+[Enllaç a la GUIA](GUIA.md)
