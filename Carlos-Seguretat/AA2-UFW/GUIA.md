@@ -1,104 +1,212 @@
-# INFORME TÈCNIC: Configuració de Tallafocs UFW a Zorin
 
-## 0. Requisits Previs i Entorn
-Necessitem una màquina Linux amb configuració amb dues targetes de xarxa: una en NAT i la segona en host-only. 
-Al llarg de l'activitat caldrà utilitzar serveis de SSH i HTTP, per tant, és imprescindible instal·lar ssh i nginx executant les següents comandes:
 
-```
+
+# 📘 Informe Técnico: Configuración del Cortafuegos UFW en Zorin OS
+
+> **Propósito:** Este documento técnico detalla el procedimiento completo para la implementación y gestión del cortafuegos UFW (*Uncomplicated Firewall*) en un sistema Zorin OS, abarcando desde la configuración inicial hasta reglas específicas de filtrado de tráfico.
+
+---
+
+## 🏗️ Requisitos Previos del Entorno
+
+Antes de iniciar la configuración, asegúrese de que su máquina virtual cumpla con los siguientes requisitos:
+
+| Componente | Configuración | Propósito |
+|------------|---------------|-----------|
+| **Interfaz 1** | NAT | Conectividad a Internet |
+| **Interfaz 2** | Host-Only | Comunicación con el equipo anfitrión |
+| **Servicio SSH** | Instalado (`openssh-server`) | Acceso remoto seguro |
+| **Servicio HTTP** | Instalado (`nginx`) | Servidor web |
+
+### Instalación de Servicios Requeridos
+
+Ejecute los siguientes comandos para instalar los paquetes necesarios:
+
+```bash
 sudo apt install ssh -y
 sudo apt install nginx -y
 ```
-![alt text](<pics/Captura de pantalla 2026-05-05 185036.png>)
 
-![alt text](<pics/Captura de pantalla 2026-05-05 185116.png>)
+![Instalación de paquetes SSH y Nginx](<pics/Captura de pantalla 2026-05-14 174536.png>)
 
----
-
-## FASE 1: Inicialització i Comportament per Defecte (Activitats-I)
-
-### 1. Estat i Regles per Defecte del Tallafocs (Criteri: "Mostra regles definides. Explica quines són les regles per defecte") 
-*   **Comandes a executar:** 
-    *   `sudo ufw status` per conèixer l'estat del firewall (habitualment ve deshabilitat en Ubuntu Server).
-    *   `sudo ufw enable` per habilitar el firewall i que comenci a filtrar.
-    *   `sudo ufw status verbose` per mostrar informació detallada de l'estat i les regles.
-
-![alt text](<pics/Captura de pantalla 2026-05-05 185227.png>)
-
-![alt text](<pics/Captura de pantalla 2026-05-05 185348.png>)
-
-*   **Explicació Tècnica:** UFW funciona mitjançant regles que poden ser d'acceptació (allow) o denegació (deny). Al llançar la comanda en mode `verbose`, podem veure que el comportament i les regles per defecte són denegar el trànsit d'entrada (`deny incoming`) i permetre el de sortida (`allow outgoing`). Si hi ha alguna regla definida prèviament, s'ha d'eliminar per deixar només el comportament per defecte.
-
-![alt text](<pics/Captura de pantalla 2026-05-05 185413.png>)
-
-### 2. Comprovació de la regla "deny" per defecte (Criteri: "Comprova regla deny per defecte")
-*   **Comandes a executar:** `sudo ufw default deny` per assegurar el bloqueig del trànsit d'entrada.
-
-![alt text](<pics/Captura de pantalla 2026-05-05 185604.png>)
-
-*   **Acció:** Connecta't des de l'amfitrió a aquest equip via SSH i observa que no et pots connectar.
-*   **Explicació Tècnica:** A l'intentar establir una connexió TCP pel port 22 des de l'amfitrió, el tallafocs intercepta el paquet. En aplicar-se la directiva per defecte (`deny`), la petició es descarta i la connexió falla.
-
-![alt text](<pics/Captura de pantalla 2026-05-05 191825.png>)
-
-![alt text](<pics/Captura de pantalla 2026-05-05 191836.png>)
-
-### 3. Aplicació de regla "deny" al trànsit de sortida (Criteri: "Aplica regla deny trànsit de sortida per defecte")
-*   **Comandes a executar:** `sudo ufw default deny outgoing`.
-*   **Acció:** Aplica la regla per defecte deny al trànsit de sortida i prova ara a fer un ping a Google.
-*   **Explicació Tècnica:** Modifiquem la directiva general per denegar el trànsit de sortida. Els paquets ICMP que genera la comanda `ping` són descartats internament pel sistema abans de poder sortir per la interfície NAT.
-
-
-![alt text](<pics/Captura de pantalla 2026-05-05 192015.png>)
+![Confirmación de instalación](<pics/Captura de pantalla 2026-05-14 174737.png>)
 
 ---
 
-## FASE 2: Gestió Específica de Trànsit (Activitats-II)
+## 🔒 Fase 1: Inicialización y Política Predeterminada
 
-### 4. Restauració del trànsit de sortida (Criteri: "Aplica regla allow trànsit de sortida per defecte")
-*   **Comandes a executar:** `sudo ufw default allow outgoing`.
-*   **Acció:** Comprova que ara sí que pots fer el ping a Google.
-*   **Explicació Tècnica:** Es restableix la política de sortida permetent el trànsit. Els paquets ICMP ara poden travessar el tallafoc cap a Internet i en rebem la resposta correctament.
+### 1.1 — Consulta del Estado y Reglas Iniciales
 
-![alt text](<pics/Captura de pantalla 2026-05-05 192127.png>)
+> **Criterio:** *Mostrar reglas definidas. Explicar cuáles son las reglas por defecto.*
 
-### 5. Prohibició d'un lloc a Internet (Criteri: "Regla per prohibir lloc a Internet")
-*   **Comandes a executar:** 
-    *   Primer, resol la IP: `ping -c 1 capgros.elnacional.cat` (apunta la IP).
-    *   Aplica la regla per denegar connexions a aquesta adreça de sortida: `sudo ufw deny out to [IP]`.
-*   **Acció:** Crea la regla per bloquejar el trànsit cap a la IP de capgros.elnacional.cat i fes un ping per verificar-ho.
-*   **Explicació Tècnica:** Les regles s'apliquen per ordre de preferència, sent molt important definir les específiques primer per evitar problemes. Aquesta regla prohibeix el trànsit si el paquet de sortida (out) té com a destinació exacta aquella IP específica. Com que la regla 1 ho prohibeix, se sobreposa a la regla general de permís.
+Ejecute las siguientes instrucciones para conocer el estado actual del cortafuegos:
 
-![alt text](<pics/Captura de pantalla 2026-05-05 193101.png>)
+| Comando | Función |
+|---------|---------|
+| `sudo ufw status` | Verificar si el servicio está activo o inactivo |
+| `sudo ufw enable` | Habilitar el cortafuegos para que comience a filtrar tráfico |
+| `sudo ufw status verbose` | Obtener información detallada del estado y reglas configuradas |
 
-### 6. Habilitació de Nginx per a l'amfitrió (Criteri: "Habilita regla per servidor nginx des de l'amfitrió")
-*   **Comandes a executar:** `sudo ufw allow from 192.168.56.107 to any port 80 proto tcp`.
-*   **Acció:** Habilita el trànsit d'entrada pel servei nginx des de la IP de l'amfitrió (192.168.56.107) i comprova-ho.
-*   **Explicació Tècnica:** Es poden fer combinacions entre adreces IP i ports a l'hora de definir les regles. El tallafoc només permetrà connexions entrants al port 80 (TCP) si provenen exclusivament de la IP de l'equip amfitrió.
+![Estado inicial de UFW](<pics/Captura de pantalla 2026-05-14 174758.png>)
 
-![alt text](<pics/Captura de pantalla 2026-05-05 193253.png>)
+![Habilitación del servicio](<pics/Captura de pantalla 2026-05-14 174837.png>)
 
-![alt text](<pics/Captura de pantalla 2026-05-05 193314.png>)
+**Análisis Técnico:** UFW opera mediante reglas de tipo `allow` (permitir) o `deny` (denegar). Al ejecutar el modo `verbose`, se observa que la política predeterminada establece el bloqueo de todo el tráfico entrante (`deny incoming`) y la aceptación del tráfico saliente (`allow outgoing`). Si existieran reglas previas, deberían eliminarse para mantener únicamente el comportamiento por defecto.
 
-### 7. Comprovació de restricció d'IP a Nginx (Criteri: "Canvia regla per servidor nginx amb una IP diferent")
-*   **Comandes a executar:** 
-    *   `sudo ufw status numbered` (per veure el número de la regla definida a l'apartat anterior).
-    *   `sudo ufw delete [número]` (per eliminar la regla de la IP 192.168.56.1).
-    *   `sudo ufw allow from 192.168.56.222 to any port 80 proto tcp` (IP inventada).
-
-![alt text](<pics/Captura de pantalla 2026-05-05 193649.png>)
-
-*   **Acció:** Intenta recarregar la web de Nginx des del navegador de l'amfitrió i comprova el resultat.
-*   **Explicació Tècnica:** En canviar la regla per a una IP diferent, l'amfitrió perd l'accés. Com que la seva IP ja no fa coincidència amb l'excepció, s'hi aplica la política de denegació de trànsit d'entrada per defecte.
-
-
-![alt text](<pics/Captura de pantalla 2026-05-05 193804.png>)
-
-
-### 8. Revisió Final (Criteri: "Mostra regles creades") 
-*   **Comandes a executar:** `sudo ufw status numbered` per poder veure les regles definides de forma numerada.
-*   **Explicació Tècnica:** Mostrem el conjunt de totes les regles que tenim definides de trànsit d'entrada, de sortida i d'enrutament. Això ens serveix com a llista de control d'accés final (ACL) i demostra visualment l'ordre d'aplicació.
-
-![alt text](<pics/Captura de pantalla 2026-05-05 194044.png>)
+![Reglas por defecto en modo verbose](<pics/Captura de pantalla 2026-05-18 155555.png>)
 
 ---
-[Tornar enrere](README.md)
+
+### 1.2 — Validación de la Política de Denegación Entrante
+
+> **Criterio:** *Comprobar regla deny por defecto.*
+
+| Comando | Descripción |
+|---------|-------------|
+| `sudo ufw default deny` | Establecer explícitamente el bloqueo del tráfico entrante |
+
+![Aplicación de política deny](<pics/Captura de pantalla 2026-05-18 155734.png>)
+
+**Procedimiento de verificación:** Desde el equipo anfitrión, intente establecer una conexión SSH hacia la máquina virtual. La conexión no será posible.
+
+**Fundamento técnico:** Cuando se intenta establecer una conexión TCP por el puerto 22 desde el anfitrión, el cortafuegos intercepta el paquete. Al aplicarse la directiva predeterminada `deny`, la petición se descarta silenciosamente y la conexión resulta fallida.
+
+![Intento de conexión SSH fallido](<pics/Captura de pantalla 2026-05-18 155823.png>)
+
+![Confirmación de bloqueo](<pics/Captura de pantalla 2026-05-18 160217.png>)
+
+---
+
+### 1.3 — Aplicación de Política de Denegación Saliente
+
+> **Criterio:** *Aplicar regla deny al tráfico de salida por defecto.*
+
+| Comando | Descripción |
+|---------|-------------|
+| `sudo ufw default deny outgoing` | Bloquear todo el tráfico de salida del sistema |
+
+**Procedimiento de verificación:** Tras aplicar la regla, ejecute un comando `ping` hacia un servidor externo (por ejemplo, Google).
+
+**Fundamento técnico:** Se modifica la directiva general para denegar el tráfico de salida. Los paquetes ICMP generados por el comando `ping` son descartados internamente por el sistema antes de poder atravesar la interfaz NAT.
+
+![Bloqueo de tráfico saliente](<pics/Captura de pantalla 2026-05-18 160324.png>)
+
+---
+
+## 🛡️ Fase 2: Gestión Específica del Tráfico
+
+### 2.1 — Restauración del Tráfico de Salida
+
+> **Criterio:** *Aplicar regla allow al tráfico de salida por defecto.*
+
+| Comando | Descripción |
+|---------|-------------|
+| `sudo ufw default allow outgoing` | Restablecer la permisividad del tráfico saliente |
+
+**Procedimiento de verificación:** Ejecute nuevamente un `ping` hacia Google para confirmar la restauración de la conectividad.
+
+**Fundamento técnico:** Se restablece la política de salida permitiendo el tráfico. Los paquetes ICMP ahora pueden atravesar el cortafuegos hacia Internet y se recibe la respuesta correspondiente.
+
+![Restauración de conectividad](<pics/Captura de pantalla 2026-05-18 160556.png>)
+
+---
+
+### 2.2 — Bloqueo de un Destino Específico en Internet
+
+> **Criterio:** *Regla para prohibir acceso a un sitio de Internet.*
+
+**Paso 1 — Resolución de dirección IP:**
+
+```bash
+ping -c 1 capgros.elnacional.cat
+```
+
+Anote la dirección IP resultante.
+
+**Paso 2 — Aplicación de la regla de bloqueo:**
+
+```bash
+sudo ufw deny out to [DIRECCIÓN_IP]
+```
+
+**Procedimiento de verificación:** Ejecute un `ping` hacia la IP bloqueada para confirmar la restricción.
+
+**Fundamento técnico:** Las reglas se aplican por orden de prioridad, siendo fundamental definir las reglas específicas antes que las generales para evitar conflictos. Esta regla prohíbe el tráfico cuando el paquete de salida (`out`) tiene como destino exacto la IP especificada. Al ser la regla más específica, tiene preferencia sobre la regla general de permiso.
+
+![Bloqueo de destino específico](<pics/Captura de pantalla 2026-05-18 160740.png>)
+
+---
+
+### 2.3 — Habilitación de Acceso a Nginx desde el Anfitrión
+
+> **Criterio:** *Habilitar regla para servidor Nginx desde el anfitrión.*
+
+| Comando | Descripción |
+|---------|-------------|
+| `sudo ufw allow from 192.168.56.107 to any port 80 proto tcp` | Permitir tráfico HTTP desde la IP del anfitrión |
+
+**Procedimiento de verificación:** Acceda al servidor web Nginx desde el navegador del equipo anfitrión (dirección `192.168.56.107`).
+
+**Fundamento técnico:** UFW permite combinaciones entre direcciones IP y puertos al definir reglas. El cortafuegos únicamente permitirá conexiones entrantes al puerto 80 (protocolo TCP) si provienen exclusivamente de la dirección IP del equipo anfitrión.
+
+![Regla de acceso a Nginx](<pics/Captura de pantalla 2026-05-18 160855.png>)
+
+![Verificación de acceso permitido](<pics/Captura de pantalla 2026-05-18 161213.png>)
+
+---
+
+### 2.4 — Verificación de Restricción por Dirección IP
+
+> **Criterio:** *Modificar regla para servidor Nginx con una IP diferente.*
+
+**Paso 1 — Identificar la regla existente:**
+
+```bash
+sudo ufw status numbered
+```
+
+**Paso 2 — Eliminar la regla anterior:**
+
+```bash
+sudo ufw delete [NÚMERO_DE_REGLA]
+```
+
+**Paso 3 — Crear nueva regla con IP ficticia:**
+
+```bash
+sudo ufw allow from 192.168.56.222 to any port 80 proto tcp
+```
+
+![Listado de reglas numeradas](<pics/Captura de pantalla 2026-05-18 161342.png>)
+
+![Eliminación de regla anterior](<pics/Captura de pantalla 2026-05-18 161841.png>)
+
+![Creación de nueva regla](<pics/Captura de pantalla 2026-05-18 162012.png>)
+
+**Procedimiento de verificación:** Intente recargar la página web de Nginx desde el navegador del anfitrión y observe el resultado.
+
+**Fundamento técnico:** Al modificar la regla para una dirección IP diferente, el anfitrión pierde el acceso. Dado que su dirección IP ya no coincide con la excepción configurada, se aplica la política de denegación de tráfico entrante por defecto.
+
+![Acceso denegado desde anfitrión](<pics/Captura de pantalla 2026-05-18 162135.png>)
+
+---
+
+### 2.5 — Revisión Final del Conjunto de Reglas
+
+> **Criterio:** *Mostrar reglas creadas.*
+
+| Comando | Descripción |
+|---------|-------------|
+| `sudo ufw status numbered` | Visualizar todas las reglas con numeración secuencial |
+
+**Fundamento técnico:** Se presenta el conjunto completo de reglas definidas para tráfico entrante, saliente y de enrutamiento. Esta lista funciona como una lista de control de acceso (ACL) final y demuestra visualmente el orden de aplicación de las políticas.
+
+![Listado final de reglas numeradas](pics/image.png)
+
+---
+
+> 📋 **Documento técnico** | Configuración UFW en Zorin OS | Cortafuegos y Seguridad de Red
+> 
+> [← Volver al índice](README.md)
+"""
+
