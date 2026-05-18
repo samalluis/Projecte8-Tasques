@@ -2,7 +2,7 @@
 
 Aquest repositori conté la guia i els exercicis pràctics per aprendre a configurar i gestionar el tallafoc UFW (*Uncomplicated Firewall*) en un entorn Linux.
 
-## 📋 Requisits Previs
+## Requisits Previs
 
 Abans de començar l'activitat, assegura't de complir amb els següents requeriments al teu entorn virtual:
 
@@ -39,7 +39,7 @@ Aplica la regla per defecte de `deny` al trànsit de sortida executant `sudo ufw
 
 ---
 
-## 🚀 Part 2: Activitats-II (Regles Específiques)
+## Part 2: Activitats-II (Regles Específiques)
 
 En aquesta segona fase, crearem excepcions i regles granulars per permetre o denegar trànsit específic.
 
@@ -52,14 +52,14 @@ Crea una regla per prohibir el trànsit cap a l'adreça IP de *capgros.elnaciona
 **7. Permís d'entrada a Nginx:**
 Habilita el trànsit d'entrada pel servei Nginx **únicament** per a la IP de l'equip amfitrió (ex. *192.168.56.1*) utilitzant la comanda `sudo ufw allow from 192.168.56.1 to any port 80 proto tcp`. Comprova des del navegador de l'amfitrió que la web connecta correctament.
 
-⚠️ *Pas extra avaluable (Rúbrica):* Canvia la regla del servidor Nginx per assignar-la a una IP diferent a la de l'amfitrió i comprova al teu navegador que perds l'accés a la web.
+*Pas extra avaluable (Rúbrica):* Canvia la regla del servidor Nginx per assignar-la a una IP diferent a la de l'amfitrió i comprova al teu navegador que perds l'accés a la web.
 
 **8. Revisió final:**
 Mostra al terminal el conjunt de totes les regles que han quedat definides després de realitzar la pràctica fent servir la comanda `sudo ufw status numbered`.
 
 ---
 
-## 📊 Criteris de Qualificació (Rúbrica)
+## Criteris de Qualificació (Rúbrica)
 
 Per obtenir la màxima puntuació en aquesta pràctica, el teu informe haurà de complir estrictament amb els següents nivells d'avaluació per a cada tasca:
 
@@ -74,7 +74,7 @@ Per obtenir la màxima puntuació en aquesta pràctica, el teu informe haurà de
 | **Canvia regla per servidor nginx amb una IP diferent** | No es fa. | Regla s'aplica correctament (però no es comprova). | **S'aplica la regla i es comprova.** |
 | **Mostra regles creades** | No es fa. | Manquen regles a la llista. | **Es mostren totes les regles creades.** |
 
-> ⏰ **Puntualitat:** La data límit de lliurament és el **19 de maig**. Un lliurament tard implicarà una penalització de **-3.2 punts**.
+>  **Puntualitat:** La data límit de lliurament és el **19 de maig**. Un lliurament tard implicarà una penalització de **-3.2 punts**.
 
 ---
 
