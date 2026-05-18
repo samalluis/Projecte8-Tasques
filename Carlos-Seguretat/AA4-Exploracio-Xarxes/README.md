@@ -17,3 +17,7 @@ Amb motiu de la vaga d'estudiants que heu secundat. Aquells alumnes que no vingu
 
     - Informació del sistema
     - Serveis i ports oberts
+ 
+---
+
+[Guia Activitat](GUIA.md)
