@@ -20,7 +20,7 @@ Al llarg de l'activitat caldrà utilitzar els serveis d'SSH i HTTP. Executa aque
 
 ---
 
-## 🛠️ Part 1: Activitats-I (Comportament per defecte)
+## Part 1: Activitats-I (Comportament per defecte)
 
 En aquesta primera fase, analitzarem l'estat inicial del tallafoc i les seves polítiques globals.
 
