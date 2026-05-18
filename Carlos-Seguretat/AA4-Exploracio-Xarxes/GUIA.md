@@ -40,7 +40,7 @@ En mode actiu, l'eina realitza un sondeig continu de la xarxa transmetent paquet
 |---------|------------|
 | `netdiscover -r 192.168.2.0/24` | Escaneig actiu del rang complet de la subxarxa |
 
-**Resultats obtinguts:** El sondeig va forçar respostes de tots els equips connectats a l'entorn domèstic, permetent identificar les seves adreces IP, adreces MAC i els fabricants corresponents de les interfícies de xarxa (MAC Vendor).
+**Resultats obtinguts:** El sondeig va forçar respostes de tots els equips connectats a l'entorn, permetent identificar les seves adreces IP, adreces MAC i els fabricants corresponents de les interfícies de xarxa (MAC Vendor).
 
 ![Resultats de l'escaneig actiu amb Netdiscover](<pics/Captura de pantalla 2026-05-18 194357.png>)
 
@@ -84,21 +84,17 @@ Nmap (*Network Mapper*) constitueix l'eina de referència per a l'escaneig de xa
 
 ### 3.1 — Sondeig d'Amfitrions a la Xarxa Domèstica
 
-Es va realitzar un escaneig de descobriment d'amfitrions per verificar quins equips de la xarxa domèstica responien a les peticions, validant així l'inventari obtingut prèviament amb Netdiscover.
+Es va realitzar un escaneig de descobriment d'amfitrions per verificar quins equips de la xarxa responien a les peticions, validant així l'inventari obtingut prèviament amb Netdiscover.
 
 | Comanda | Descripció |
 |---------|------------|
-| `nmap -sn 192.168.0.0/24` | Sondeig d'amfitrions actius sense escaneig de ports |
+| `nmap -sn 192.168.2.0/24` | Sondeig d'amfitrions actius sense escaneig de ports |
 
 ![Resultats del sondeig d'amfitrions amb Nmap](<pics/Captura de pantalla 2026-05-18 194905.png>)
 
 ---
 
-### 3.2 — Anàlisi Detallat del Router Domèstic
-
- seguint les indicacions de la pràctica per als alumnes que la realitzen des de casa, es va dirigir l'anàlisi detallat exclusivament cap al **router domèstic**.
-
-Es va emprar l'opció de detecció de sistema operatiu per obtenir informació completa tant del sistema com dels serveis i ports exposats.
+### 3.2 — Anàlisi Detallat del Router VyOS i Servidor Ubuntu
 
 | Comanda | Descripció |
 |---------|------------|
